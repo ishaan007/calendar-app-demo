@@ -21,7 +21,7 @@
 }
 
 body {
-    font-family: 'Google Sans', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
     background: var(--white);
     color: var(--text-primary);
     line-height: 1.5;
@@ -113,7 +113,7 @@ body {
     height: 28px;
 }
 
-.icon-btn.small .material-icons-outlined {
+.icon-btn.small .material-symbols-outlined {
     font-size: 20px;
 }
 
@@ -192,7 +192,7 @@ body {
     box-shadow: 0 4px 6px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.24);
 }
 
-.create-btn .material-icons-outlined {
+.create-btn .material-symbols-outlined {
     font-size: 28px;
     color: var(--primary);
 }
@@ -288,7 +288,7 @@ body {
     cursor: pointer;
 }
 
-.section-header .material-icons-outlined {
+.section-header .material-symbols-outlined {
     font-size: 20px;
 }
 
@@ -516,7 +516,7 @@ body {
     padding: 12px 24px;
 }
 
-.form-row .material-icons-outlined {
+.form-row .material-symbols-outlined {
     color: var(--text-muted);
     margin-top: 2px;
 }
