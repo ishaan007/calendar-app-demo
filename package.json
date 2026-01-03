@@ -1,0 +1,26 @@
+{
+  "name": "calendar-app-demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "dev": "npx @tailwindcss/cli -i ./src/input.css -o ./dist/output.css --watch",
+    "build": "npx @tailwindcss/cli -i ./src/input.css -o ./dist/output.css --minify",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ishaan007/calendar-app-demo.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ishaan007/calendar-app-demo/issues"
+  },
+  "homepage": "https://github.com/ishaan007/calendar-app-demo#readme",
+  "dependencies": {
+    "@tailwindcss/cli": "^4.1.18",
+    "tailwindcss": "^4.1.18"
+  }
+}

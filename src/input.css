@@ -1,0 +1,112 @@
+@import "tailwindcss";
+
+/* Custom theme configuration for Google Calendar style */
+@theme {
+  --color-primary: #1a73e8;
+  --color-primary-hover: #1557b0;
+  --color-text-primary: #3c4043;
+  --color-text-secondary: #5f6368;
+  --color-text-muted: #70757a;
+  --color-border: #dadce0;
+  --color-hover-bg: #f1f3f4;
+  --color-today: #1a73e8;
+  --color-selected-blue: #e8f0fe;
+}
+
+/* Google Calendar Logo Gradient */
+.logo-icon {
+  background: linear-gradient(135deg, #4285f4 25%, #34a853 25%, #34a853 50%, #fbbc05 50%, #fbbc05 75%, #ea4335 75%);
+}
+
+/* Title input border styling */
+.title-input input {
+  border-bottom: 2px solid var(--color-primary);
+}
+
+/* Custom checkbox checkmark styling */
+.calendar-item input:checked + .checkmark {
+  background-color: var(--color);
+}
+
+.calendar-item input:checked + .checkmark::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Day cell styles (dynamically created) */
+.day-cell {
+  @apply min-h-[120px] border-r border-b border-border p-1 cursor-pointer transition-colors;
+}
+
+.day-cell:hover {
+  @apply bg-hover-bg;
+}
+
+.day-cell:nth-child(7n) {
+  @apply border-r-0;
+}
+
+.day-cell.other-month {
+  @apply bg-gray-50;
+}
+
+.day-cell.other-month .day-number {
+  @apply text-text-muted;
+}
+
+.day-number {
+  @apply w-7 h-7 flex items-center justify-center text-xs font-medium rounded-full m-0.5;
+}
+
+.day-cell.today .day-number {
+  @apply bg-today text-white;
+}
+
+/* Event chips (dynamically created) */
+.event-chip {
+  @apply bg-primary text-white px-2 py-0.5 rounded text-xs my-0.5 whitespace-nowrap overflow-hidden text-ellipsis cursor-pointer;
+}
+
+.event-chip:hover {
+  filter: brightness(0.9);
+}
+
+/* Mini calendar day styles (dynamically created) */
+.mini-day {
+  @apply w-8 h-8 flex items-center justify-center text-xs rounded-full cursor-pointer mx-auto transition-colors;
+}
+
+.mini-day:hover {
+  @apply bg-hover-bg;
+}
+
+.mini-day.other-month {
+  @apply text-text-muted;
+}
+
+.mini-day.today {
+  @apply bg-today text-white;
+}
+
+.mini-day.selected {
+  @apply bg-selected-blue text-primary;
+}
+
+/* Modal hidden state override */
+.modal-overlay[hidden] {
+  display: none !important;
+}
+
+/* Responsive day cell height */
+@media (max-width: 640px) {
+  .day-cell {
+    @apply min-h-[80px];
+  }
+}
