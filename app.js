@@ -1,10 +1,11 @@
-// Calendar App - Main Application Logic
+// Calendar App - Google Calendar Clone
 
 // ============================================
 // State & Constants
 // ============================================
 const STORAGE_KEY = 'calendar_events';
 let currentDate = new Date();
+let selectedDate = new Date();
 let events = [];
 
 // ============================================
@@ -14,21 +15,36 @@ const monthYearEl = document.getElementById('monthYear');
 const calendarDaysEl = document.getElementById('calendarDays');
 const prevMonthBtn = document.getElementById('prevMonth');
 const nextMonthBtn = document.getElementById('nextMonth');
+const todayBtn = document.getElementById('todayBtn');
+const createBtn = document.getElementById('createBtn');
+
+// Mini calendar
+const miniMonthEl = document.getElementById('miniMonth');
+const miniDaysEl = document.getElementById('miniDays');
+const miniPrevBtn = document.getElementById('miniPrev');
+const miniNextBtn = document.getElementById('miniNext');
+
+// Modal elements
 const modalOverlay = document.getElementById('modalOverlay');
-const modalTitle = document.getElementById('modalTitle');
 const eventForm = document.getElementById('eventForm');
 const eventIdInput = document.getElementById('eventId');
 const eventTitleInput = document.getElementById('eventTitle');
 const eventDateInput = document.getElementById('eventDate');
-const eventTimeInput = document.getElementById('eventTime');
+const eventStartTimeInput = document.getElementById('eventStartTime');
+const eventEndTimeInput = document.getElementById('eventEndTime');
+const eventLocationInput = document.getElementById('eventLocation');
 const eventDescInput = document.getElementById('eventDescription');
+const dateDisplayEl = document.getElementById('dateDisplay');
 const deleteBtn = document.getElementById('deleteBtn');
 const closeModalBtn = document.getElementById('closeModal');
 const titleError = document.getElementById('titleError');
 const dateError = document.getElementById('dateError');
 
+// Logo day
+const logoDay = document.querySelector('.logo-day');
+
 // ============================================
-// localStorage Functions (Task 5)
+// localStorage Functions
 // ============================================
 function saveEvents() {
     try {
@@ -51,8 +67,15 @@ function loadEvents() {
 }
 
 // ============================================
-// Calendar Rendering (Task 3)
+// Date Utilities
 // ============================================
+const MONTHS = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+];
+
+const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
 function getDaysInMonth(year, month) {
     return new Date(year, month + 1, 0).getDate();
 }
@@ -62,11 +85,7 @@ function getFirstDayOfMonth(year, month) {
 }
 
 function formatMonthYear(date) {
-    const months = [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-    return `${months[date.getMonth()]} ${date.getFullYear()}`;
+    return `${MONTHS[date.getMonth()]} ${date.getFullYear()}`;
 }
 
 function isToday(year, month, day) {
@@ -78,16 +97,32 @@ function isToday(year, month, day) {
     );
 }
 
+function isSameDay(date1, date2) {
+    return (
+        date1.getFullYear() === date2.getFullYear() &&
+        date1.getMonth() === date2.getMonth() &&
+        date1.getDate() === date2.getDate()
+    );
+}
+
 function formatDateString(year, month, day) {
     const m = String(month + 1).padStart(2, '0');
     const d = String(day).padStart(2, '0');
     return `${year}-${m}-${d}`;
 }
 
+function formatDisplayDate(dateString) {
+    const date = new Date(dateString + 'T00:00:00');
+    return `${DAYS[date.getDay()]}, ${MONTHS[date.getMonth()]} ${date.getDate()}`;
+}
+
 function getEventsForDate(dateString) {
     return events.filter(event => event.date === dateString);
 }
 
+// ============================================
+// Main Calendar Rendering
+// ============================================
 function renderCalendar() {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
@@ -95,74 +130,193 @@ function renderCalendar() {
     // Update header
     monthYearEl.textContent = formatMonthYear(currentDate);
 
+    // Update logo day
+    if (logoDay) {
+        logoDay.textContent = new Date().getDate();
+    }
+
     // Clear calendar
     calendarDaysEl.innerHTML = '';
 
     const daysInMonth = getDaysInMonth(year, month);
     const firstDay = getFirstDayOfMonth(year, month);
+    const daysInPrevMonth = getDaysInMonth(year, month - 1);
 
-    // Empty cells before first day
-    for (let i = 0; i < firstDay; i++) {
-        const emptyCell = document.createElement('div');
-        emptyCell.className = 'day-cell empty';
-        calendarDaysEl.appendChild(emptyCell);
+    // Previous month days
+    for (let i = firstDay - 1; i >= 0; i--) {
+        const day = daysInPrevMonth - i;
+        const dayCell = createDayCell(year, month - 1, day, true);
+        calendarDaysEl.appendChild(dayCell);
     }
 
-    // Day cells
+    // Current month days
     for (let day = 1; day <= daysInMonth; day++) {
-        const dayCell = document.createElement('div');
-        dayCell.className = 'day-cell';
+        const dayCell = createDayCell(year, month, day, false);
+        calendarDaysEl.appendChild(dayCell);
+    }
 
-        if (isToday(year, month, day)) {
-            dayCell.classList.add('today');
-        }
-
-        const dayNumber = document.createElement('div');
-        dayNumber.className = 'day-number';
-        dayNumber.textContent = day;
-        dayCell.appendChild(dayNumber);
-
-        // Render events for this day
-        const dateString = formatDateString(year, month, day);
-        const dayEvents = getEventsForDate(dateString);
-
-        dayEvents.forEach(event => {
-            const eventChip = document.createElement('div');
-            eventChip.className = 'event-chip';
-            eventChip.textContent = event.time ? `${event.time} ${event.title}` : event.title;
-            eventChip.addEventListener('click', (e) => {
-                e.stopPropagation();
-                openEditModal(event);
-            });
-            dayCell.appendChild(eventChip);
-        });
-
-        // Click to add event
-        dayCell.addEventListener('click', () => {
-            openAddModal(dateString);
-        });
-
+    // Next month days (fill remaining cells)
+    const totalCells = calendarDaysEl.children.length;
+    const remainingCells = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+    for (let day = 1; day <= remainingCells; day++) {
+        const dayCell = createDayCell(year, month + 1, day, true);
         calendarDaysEl.appendChild(dayCell);
     }
 }
 
-function navigateMonth(delta) {
-    currentDate.setMonth(currentDate.getMonth() + delta);
-    renderCalendar();
+function createDayCell(year, month, day, isOtherMonth) {
+    // Normalize month/year for prev/next month overflow
+    const date = new Date(year, month, day);
+    const normalizedYear = date.getFullYear();
+    const normalizedMonth = date.getMonth();
+    const normalizedDay = date.getDate();
+
+    const dayCell = document.createElement('div');
+    dayCell.className = 'day-cell';
+
+    if (isOtherMonth) {
+        dayCell.classList.add('other-month');
+    }
+
+    if (isToday(normalizedYear, normalizedMonth, normalizedDay)) {
+        dayCell.classList.add('today');
+    }
+
+    const dayNumber = document.createElement('div');
+    dayNumber.className = 'day-number';
+    dayNumber.textContent = normalizedDay;
+    dayCell.appendChild(dayNumber);
+
+    // Render events for this day
+    const dateString = formatDateString(normalizedYear, normalizedMonth, normalizedDay);
+    const dayEvents = getEventsForDate(dateString);
+
+    dayEvents.forEach(event => {
+        const eventChip = document.createElement('div');
+        eventChip.className = 'event-chip';
+        const timeStr = event.startTime ? formatTime12h(event.startTime) + ' ' : '';
+        eventChip.textContent = timeStr + event.title;
+        eventChip.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openEditModal(event);
+        });
+        dayCell.appendChild(eventChip);
+    });
+
+    // Click to add event
+    dayCell.addEventListener('click', () => {
+        openAddModal(dateString);
+    });
+
+    return dayCell;
+}
+
+function formatTime12h(time24) {
+    if (!time24) return '';
+    const [hours, minutes] = time24.split(':');
+    const h = parseInt(hours);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const h12 = h % 12 || 12;
+    return `${h12}:${minutes} ${ampm}`;
 }
 
 // ============================================
-// Event CRUD Operations (Task 4)
+// Mini Calendar Rendering
+// ============================================
+function renderMiniCalendar() {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+
+    miniMonthEl.textContent = formatMonthYear(currentDate);
+    miniDaysEl.innerHTML = '';
+
+    const daysInMonth = getDaysInMonth(year, month);
+    const firstDay = getFirstDayOfMonth(year, month);
+    const daysInPrevMonth = getDaysInMonth(year, month - 1);
+
+    // Previous month days
+    for (let i = firstDay - 1; i >= 0; i--) {
+        const day = daysInPrevMonth - i;
+        const dayEl = createMiniDay(year, month - 1, day, true);
+        miniDaysEl.appendChild(dayEl);
+    }
+
+    // Current month days
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dayEl = createMiniDay(year, month, day, false);
+        miniDaysEl.appendChild(dayEl);
+    }
+
+    // Next month days
+    const totalCells = miniDaysEl.children.length;
+    const rows = Math.ceil(totalCells / 7);
+    const targetCells = rows * 7;
+    for (let day = 1; miniDaysEl.children.length < targetCells; day++) {
+        const dayEl = createMiniDay(year, month + 1, day, true);
+        miniDaysEl.appendChild(dayEl);
+    }
+}
+
+function createMiniDay(year, month, day, isOtherMonth) {
+    const date = new Date(year, month, day);
+    const normalizedYear = date.getFullYear();
+    const normalizedMonth = date.getMonth();
+    const normalizedDay = date.getDate();
+
+    const dayEl = document.createElement('div');
+    dayEl.className = 'mini-day';
+    dayEl.textContent = normalizedDay;
+
+    if (isOtherMonth) {
+        dayEl.classList.add('other-month');
+    }
+
+    if (isToday(normalizedYear, normalizedMonth, normalizedDay)) {
+        dayEl.classList.add('today');
+    }
+
+    if (isSameDay(date, selectedDate)) {
+        dayEl.classList.add('selected');
+    }
+
+    dayEl.addEventListener('click', () => {
+        selectedDate = new Date(normalizedYear, normalizedMonth, normalizedDay);
+        renderMiniCalendar();
+    });
+
+    return dayEl;
+}
+
+// ============================================
+// Navigation
+// ============================================
+function navigateMonth(delta) {
+    currentDate.setMonth(currentDate.getMonth() + delta);
+    renderCalendar();
+    renderMiniCalendar();
+}
+
+function goToToday() {
+    currentDate = new Date();
+    selectedDate = new Date();
+    renderCalendar();
+    renderMiniCalendar();
+}
+
+// ============================================
+// Event CRUD Operations
 // ============================================
 function generateId() {
     return Date.now().toString(36) + Math.random().toString(36).substr(2);
 }
 
 function openAddModal(dateString) {
-    modalTitle.textContent = 'Add Event';
     eventForm.reset();
     eventIdInput.value = '';
     eventDateInput.value = dateString;
+    dateDisplayEl.textContent = formatDisplayDate(dateString);
+    eventStartTimeInput.value = '09:00';
+    eventEndTimeInput.value = '10:00';
     deleteBtn.hidden = true;
     clearErrors();
     modalOverlay.hidden = false;
@@ -170,11 +324,13 @@ function openAddModal(dateString) {
 }
 
 function openEditModal(event) {
-    modalTitle.textContent = 'Edit Event';
     eventIdInput.value = event.id;
     eventTitleInput.value = event.title;
     eventDateInput.value = event.date;
-    eventTimeInput.value = event.time || '';
+    dateDisplayEl.textContent = formatDisplayDate(event.date);
+    eventStartTimeInput.value = event.startTime || '09:00';
+    eventEndTimeInput.value = event.endTime || '10:00';
+    eventLocationInput.value = event.location || '';
     eventDescInput.value = event.description || '';
     deleteBtn.hidden = false;
     clearErrors();
@@ -193,7 +349,9 @@ function addEvent(eventData) {
         id: generateId(),
         title: eventData.title,
         date: eventData.date,
-        time: eventData.time || '',
+        startTime: eventData.startTime || '',
+        endTime: eventData.endTime || '',
+        location: eventData.location || '',
         description: eventData.description || ''
     };
     events.push(newEvent);
@@ -208,7 +366,9 @@ function updateEvent(eventData) {
             ...events[index],
             title: eventData.title,
             date: eventData.date,
-            time: eventData.time || '',
+            startTime: eventData.startTime || '',
+            endTime: eventData.endTime || '',
+            location: eventData.location || '',
             description: eventData.description || ''
         };
         saveEvents();
@@ -226,7 +386,7 @@ function deleteEvent(id) {
 }
 
 // ============================================
-// Validation (Task 6)
+// Validation
 // ============================================
 function clearErrors() {
     titleError.textContent = '';
@@ -258,6 +418,16 @@ function validateForm() {
 // ============================================
 prevMonthBtn.addEventListener('click', () => navigateMonth(-1));
 nextMonthBtn.addEventListener('click', () => navigateMonth(1));
+todayBtn.addEventListener('click', goToToday);
+
+miniPrevBtn.addEventListener('click', () => navigateMonth(-1));
+miniNextBtn.addEventListener('click', () => navigateMonth(1));
+
+createBtn.addEventListener('click', () => {
+    const today = new Date();
+    const dateString = formatDateString(today.getFullYear(), today.getMonth(), today.getDate());
+    openAddModal(dateString);
+});
 
 closeModalBtn.addEventListener('click', closeModal);
 
@@ -284,7 +454,9 @@ eventForm.addEventListener('submit', (e) => {
         id: eventIdInput.value,
         title: eventTitleInput.value.trim(),
         date: eventDateInput.value,
-        time: eventTimeInput.value,
+        startTime: eventStartTimeInput.value,
+        endTime: eventEndTimeInput.value,
+        location: eventLocationInput.value.trim(),
         description: eventDescInput.value.trim()
     };
 
@@ -311,18 +483,13 @@ eventTitleInput.addEventListener('input', () => {
     }
 });
 
-eventDateInput.addEventListener('change', () => {
-    if (eventDateInput.value) {
-        dateError.textContent = '';
-    }
-});
-
 // ============================================
 // Initialize
 // ============================================
 function init() {
     loadEvents();
     renderCalendar();
+    renderMiniCalendar();
 }
 
 init();

@@ -3,58 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendar App</title>
+    <title>Calendar</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600&family=Roboto:wght@400;500&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined">
 </head>
 <body>
-    <div class="calendar-container">
-        <header class="calendar-header">
-            <button class="nav-btn" id="prevMonth" aria-label="Previous month">&lt;</button>
-            <h1 id="monthYear"></h1>
-            <button class="nav-btn" id="nextMonth" aria-label="Next month">&gt;</button>
-        </header>
-
-        <div class="calendar-grid">
-            <div class="day-header">Sun</div>
-            <div class="day-header">Mon</div>
-            <div class="day-header">Tue</div>
-            <div class="day-header">Wed</div>
-            <div class="day-header">Thu</div>
-            <div class="day-header">Fri</div>
-            <div class="day-header">Sat</div>
-            <div id="calendarDays" class="calendar-days"></div>
+    <!-- Top Header -->
+    <header class="top-header">
+        <div class="header-left">
+            <button class="icon-btn menu-btn" aria-label="Menu">
+                <span class="material-icons-outlined">menu</span>
+            </button>
+            <div class="logo">
+                <div class="logo-icon">
+                    <span class="logo-day">4</span>
+                </div>
+                <span class="logo-text">Calendar</span>
+            </div>
         </div>
+        <div class="header-center">
+            <button class="today-btn" id="todayBtn">Today</button>
+            <button class="icon-btn nav-btn" id="prevMonth" aria-label="Previous">
+                <span class="material-icons-outlined">chevron_left</span>
+            </button>
+            <button class="icon-btn nav-btn" id="nextMonth" aria-label="Next">
+                <span class="material-icons-outlined">chevron_right</span>
+            </button>
+            <h1 class="current-date" id="monthYear">January 2026</h1>
+        </div>
+        <div class="header-right">
+            <button class="icon-btn" aria-label="Search">
+                <span class="material-icons-outlined">search</span>
+            </button>
+            <button class="icon-btn" aria-label="Settings">
+                <span class="material-icons-outlined">settings</span>
+            </button>
+            <div class="view-dropdown">
+                <span>Month</span>
+                <span class="material-icons-outlined">arrow_drop_down</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="app-container">
+        <!-- Left Sidebar -->
+        <aside class="sidebar">
+            <button class="create-btn" id="createBtn">
+                <span class="material-icons-outlined">add</span>
+                <span>Create</span>
+            </button>
+
+            <!-- Mini Calendar -->
+            <div class="mini-calendar">
+                <div class="mini-header">
+                    <span class="mini-month" id="miniMonth">January 2026</span>
+                    <div class="mini-nav">
+                        <button class="icon-btn small" id="miniPrev" aria-label="Previous month">
+                            <span class="material-icons-outlined">chevron_left</span>
+                        </button>
+                        <button class="icon-btn small" id="miniNext" aria-label="Next month">
+                            <span class="material-icons-outlined">chevron_right</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="mini-grid">
+                    <div class="mini-day-header">S</div>
+                    <div class="mini-day-header">M</div>
+                    <div class="mini-day-header">T</div>
+                    <div class="mini-day-header">W</div>
+                    <div class="mini-day-header">T</div>
+                    <div class="mini-day-header">F</div>
+                    <div class="mini-day-header">S</div>
+                </div>
+                <div class="mini-days" id="miniDays"></div>
+            </div>
+
+            <!-- My Calendars -->
+            <div class="calendars-section">
+                <div class="section-header">
+                    <span class="material-icons-outlined">expand_more</span>
+                    <span>My calendars</span>
+                </div>
+                <label class="calendar-item">
+                    <input type="checkbox" checked>
+                    <span class="checkmark" style="--color: #1a73e8"></span>
+                    <span>Events</span>
+                </label>
+                <label class="calendar-item">
+                    <input type="checkbox" checked>
+                    <span class="checkmark" style="--color: #0b8043"></span>
+                    <span>Birthdays</span>
+                </label>
+                <label class="calendar-item">
+                    <input type="checkbox" checked>
+                    <span class="checkmark" style="--color: #8e24aa"></span>
+                    <span>Tasks</span>
+                </label>
+            </div>
+        </aside>
+
+        <!-- Main Calendar -->
+        <main class="main-calendar">
+            <div class="calendar-grid">
+                <div class="day-header">SUN</div>
+                <div class="day-header">MON</div>
+                <div class="day-header">TUE</div>
+                <div class="day-header">WED</div>
+                <div class="day-header">THU</div>
+                <div class="day-header">FRI</div>
+                <div class="day-header">SAT</div>
+            </div>
+            <div class="calendar-days" id="calendarDays"></div>
+        </main>
     </div>
 
     <!-- Event Modal -->
     <div class="modal-overlay" id="modalOverlay" hidden>
         <div class="modal" role="dialog" aria-labelledby="modalTitle">
-            <div class="modal-header">
-                <h2 id="modalTitle">Add Event</h2>
-                <button class="close-btn" id="closeModal" aria-label="Close modal">&times;</button>
+            <div class="modal-top">
+                <button class="icon-btn" aria-label="More options">
+                    <span class="material-icons-outlined">drag_handle</span>
+                </button>
+                <button class="icon-btn" id="closeModal" aria-label="Close">
+                    <span class="material-icons-outlined">close</span>
+                </button>
             </div>
             <form id="eventForm">
-                <div class="form-group">
-                    <label for="eventTitle">Title *</label>
-                    <input type="text" id="eventTitle" name="title" required>
+                <div class="title-input">
+                    <input type="text" id="eventTitle" placeholder="Add title" required>
                     <span class="error-message" id="titleError"></span>
                 </div>
-                <div class="form-group">
-                    <label for="eventDate">Date *</label>
-                    <input type="date" id="eventDate" name="date" required>
-                    <span class="error-message" id="dateError"></span>
+
+                <div class="event-tabs">
+                    <button type="button" class="tab active">Event</button>
+                    <button type="button" class="tab">Task</button>
                 </div>
-                <div class="form-group">
-                    <label for="eventTime">Time</label>
-                    <input type="time" id="eventTime" name="time">
+
+                <div class="form-row">
+                    <span class="material-icons-outlined">schedule</span>
+                    <div class="row-content">
+                        <span class="date-display" id="dateDisplay">Sunday, January 4</span>
+                        <div class="time-inputs">
+                            <input type="time" id="eventStartTime" value="09:00">
+                            <span>–</span>
+                            <input type="time" id="eventEndTime" value="10:00">
+                        </div>
+                        <input type="date" id="eventDate" required hidden>
+                        <span class="error-message" id="dateError"></span>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="eventDescription">Description</label>
-                    <textarea id="eventDescription" name="description" rows="3"></textarea>
+
+                <div class="form-row">
+                    <span class="material-icons-outlined">location_on</span>
+                    <input type="text" class="row-input" placeholder="Add location" id="eventLocation">
                 </div>
-                <input type="hidden" id="eventId" name="id">
-                <div class="form-actions">
-                    <button type="button" class="btn btn-danger" id="deleteBtn" hidden>Delete</button>
+
+                <div class="form-row">
+                    <span class="material-icons-outlined">notes</span>
+                    <textarea class="row-input" placeholder="Add description" id="eventDescription" rows="2"></textarea>
+                </div>
+
+                <input type="hidden" id="eventId">
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-text" id="deleteBtn" hidden>Delete</button>
+                    <button type="button" class="btn btn-text" id="moreOptions">More options</button>
                     <button type="submit" class="btn btn-primary">Save</button>
                 </div>
             </form>
